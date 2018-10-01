@@ -1,0 +1,30 @@
+This is the reference for the LMC
+
+// Instructions
+ADD 	Add memory at address to the acc
+SUB 	Subtract memory at address to acc
+STA 	Store accumulator at address
+LDA 	Load from address into acc
+BRA 	Set the PC to address 
+BRZ 	If acc is zero or neg flag set, set PC to address
+BRP 	If acc is greater the zero, set PC to address
+INP 	Move from Inbox to acc
+OUT 	Move from acc to Outbox
+000 	End Program
+DAT 	Store operand in this address
+
+// Labels
+Labels are supported by this assembler. To use labels place 
+the labelname before instruction. The following is a labeled
+address that contains the data 10 "counter DAT 10"
+
+// Comments
+Comments are started with a semicolon on column 1
+
+// Input/Output
+The simulator will try reading from STDIN for Input. Failing this 
+the user will be prompted to type a character. Output is buffered
+and displayed in it's entirety on halt.
+
+// Stopping execution
+Sending sigkill will halt execution and dump buffered output to STDIN
