@@ -5,10 +5,12 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 var menMap = map[int]string{
@@ -65,7 +67,7 @@ func main() {
 	var comp littleMan
 
 	// Load pgm into computer
-	comp.LoadProgram(os.Args[1])
+	comp.LoadProgram(flag.Arg(0))
 	// Exec loop
 	for {
 		isHalted, err := comp.Step()
@@ -80,6 +82,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		// Give a bit to watch the display
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	fmt.Println("Execution Terminated.")
@@ -91,7 +96,7 @@ func main() {
 // Load bytecode to memory
 func (l *littleMan) LoadProgram(path string) (e error) {
 	// Get raw data
-	raw, err := ioutil.ReadFile(os.Args[1])
+	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Printf("Could not read file: %v", err)
 		return err
@@ -122,9 +127,16 @@ func (l *littleMan) LoadProgram(path string) (e error) {
 
 // Advance execution
 func (l *littleMan) Step() (isHalt bool, err error) {
+	// Retrieve the current ins
 	ins, data := parseCode(l.Memory[l.PC])
+
+	// Advance the PC
+	if l.PC == 100 {
+		return false, errors.New("pc pointed out of memory. Halting")
+	}
 	l.PC++
 
+	// Handle instruction
 	switch ins {
 	case "ADD":
 		l.Accumulator += l.Memory[data]
@@ -145,6 +157,7 @@ func (l *littleMan) Step() (isHalt bool, err error) {
 			l.PC = data
 		}
 	case "INP":
+		fmt.Printf("Prompting for input:")
 		c, err := stdin.ReadByte()
 		if err != nil {
 			fmt.Printf("Error reading input. %v", err)
@@ -183,5 +196,30 @@ func (l *littleMan) Dump() {
 
 // Seperate the instruction from its operand
 func parseCode(code int) (ins string, data int) {
+	data = code % 100
+	switch code - (code % 100) {
+	case 100:
+		ins = "ADD"
+	case 200:
+		ins = "SUB"
+	case 300:
+		ins = "STA"
+	case 400:
+		ins = "LDA"
+	case 500:
+		ins = "BRA"
+	case 600:
+		ins = "BRZ"
+	case 700:
+		ins = "BRP"
+	case 800:
+		ins = "INP"
+	case 901:
+		ins = "OUT"
+	case 902:
+		ins = "HLT"
+	case 000:
+		ins = "DAT"
+	}
 	return
 }
